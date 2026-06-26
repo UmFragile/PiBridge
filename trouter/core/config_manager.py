@@ -9,7 +9,7 @@ import time
 
 from .. import db
 from . import validation, transaction
-from ..services import hostapd, dnsmasq, nftables, vpn, sysctl
+from ..services import hostapd, dnsmasq, nftables, vpn, sysctl, network
 
 
 def current_aps():
@@ -33,7 +33,15 @@ def _generate_all(aps):
 
 
 def _reload_services():
+    aps = current_aps()
+    # Clear rfkill + set the regulatory domain BEFORE hostapd starts; otherwise
+    # hostapd hits a blocked radio on its first start and crash-loops. (The
+    # hostapd@ unit also does this per-restart via ExecStartPre.)
+    network.unblock_radio()
     hostapd.reload()
+    # Then assign each AP's gateway IP and bring the link up, BEFORE dnsmasq
+    # tries to bind to those addresses.
+    network.bring_up(aps)
     dnsmasq.reload()
     nftables.reload()
     vpn.reload()

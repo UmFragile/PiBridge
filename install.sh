@@ -34,10 +34,18 @@ main() {
            /var/lib/travelrouter /var/log/travelrouter \
            /etc/travelrouter/generated
 
+  echo "==> Clearing Wi-Fi rfkill block and setting regulatory domain"
+  # Fresh Pi OS images soft-block the radio until a country is set; hostapd
+  # cannot start an AP while blocked. COUNTRY defaults to US (override below).
+  rfkill unblock wifi || true
+  rfkill unblock all || true
+  iw reg set "${TROUTER_COUNTRY:-US}" 2>/dev/null || true
+
   echo "==> Installing systemd units"
   cp "$REPO_DIR"/systemd/*.service /etc/systemd/system/
   systemctl daemon-reload
-  systemctl enable travelrouter-boot.service travelrouter.service
+  systemctl enable travelrouter-boot.service travelrouter.service \
+                   travelrouter-dnsmasq.service
 
   echo "==> Set the admin password"
   "$PREFIX/venv/bin/python" -m trouter.run set-admin admin

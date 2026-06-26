@@ -23,7 +23,8 @@ def generate(aps):
         if not ap.get("enabled", 1):
             continue
         ifname = hal.resolve_name(ap["iface_uuid"]) or "wlan0"
-        content = render("hostapd.conf.j2", ap=ap, ifname=ifname)
+        content = render("hostapd.conf.j2", ap=ap, ifname=ifname,
+                         country=config.COUNTRY_CODE)
         write(_conf_path(ap["id"] or ap["ssid"]), content)
 
 

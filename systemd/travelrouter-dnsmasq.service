@@ -1,0 +1,15 @@
+[Unit]
+Description=dnsmasq for travelrouter (generated config)
+After=network.target travelrouter-boot.service
+PartOf=travelrouter.service
+
+[Service]
+Type=simple
+# -k keeps it in the foreground for systemd; -C loads ONLY our generated file.
+ExecStart=/usr/sbin/dnsmasq -k -C /etc/travelrouter/generated/dnsmasq/dnsmasq.conf
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
