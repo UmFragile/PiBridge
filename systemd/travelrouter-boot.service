@@ -1,0 +1,13 @@
+[Unit]
+Description=travelrouter first-boot / boot reconciliation
+After=network.target
+Before=travelrouter.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/travelrouter
+ExecStart=/opt/travelrouter/venv/bin/python -m trouter.boot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

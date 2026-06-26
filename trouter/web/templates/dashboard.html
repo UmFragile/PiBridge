@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · travelrouter{% endblock %}
+{% block body %}
+<meta name="csrf" content="{{ csrf }}">
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><span class="dot"></span> travelrouter</div>
+    <nav>
+      <a class="nav active" data-view="dashboard">Dashboard</a>
+      <a class="nav" data-view="interfaces">Interfaces</a>
+      <a class="nav" data-view="aps">Access Points</a>
+      <a class="nav" data-view="clients">Clients</a>
+      <a class="nav" data-view="vpn">VPN</a>
+      <a class="nav" data-view="files">Files</a>
+      <a class="nav" data-view="scripts">Scripts</a>
+      <a class="nav" data-view="system">System</a>
+    </nav>
+    <button class="btn ghost" id="logout">Sign out</button>
+  </aside>
+
+  <main class="content">
+    <header class="topbar">
+      <h1 id="viewTitle">Dashboard</h1>
+      <div class="status-pill" id="netStatus">checking…</div>
+    </header>
+
+    <section id="recs" class="recs"></section>
+    <section id="view" class="view"></section>
+  </main>
+</div>
+
+<!-- Confirmation-countdown overlay: the anti-lockout UX -->
+<div class="overlay hidden" id="confirmOverlay">
+  <div class="card confirm-card">
+    <h2>Confirm changes</h2>
+    <p>Changes are live. Confirm within <b id="countdown">90</b>s or the system
+       will automatically revert to the previous working configuration.</p>
+    <div class="confirm-actions">
+      <button class="btn primary" id="confirmBtn">Keep changes</button>
+      <button class="btn danger" id="revertBtn">Revert now</button>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}
