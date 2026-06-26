@@ -41,12 +41,6 @@ REGULATORY_DB    = os.path.join(REPO_DIR, "config", "regulatory.yaml")
 # before it auto-reverts. Spec asks for 60-120s.
 CONFIRM_TIMEOUT_SECONDS = int(_p("TROUTER_CONFIRM_TIMEOUT", "90"))
 
-# Management UI port (must match what the firewall opens) and the regulatory
-# domain the radio + hostapd use. Without a country the Pi's radio stays
-# rfkill-blocked and hostapd refuses to start an AP.
-MGMT_PORT    = int(_p("TROUTER_PORT", "8080"))
-COUNTRY_CODE = _p("TROUTER_COUNTRY", "US")
-
 # Web/security.
 SECRET_KEY_FILE  = os.path.join(STATE_DIR, "secret.key")
 SESSION_LIFETIME_MIN = 60

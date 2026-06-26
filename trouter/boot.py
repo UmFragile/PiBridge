@@ -36,41 +36,25 @@ def _first_boot():
     return n == 0
 
 
-def _pick_ap_iface(prefer_usb=True):
-    """Choose the radio the bootstrap AP binds to.
-
-    On a Pi Zero 2 W the single onboard radio is best kept free for an upstream
-    client uplink, so by default we prefer a USB Wi-Fi dongle for the AP and
-    only fall back to the onboard radio if no USB radio is present.
-    """
-    wifi = [d for d in hal.list_interfaces()
-            if d["present"] and d["kind"].startswith("wifi")
-            and d["capabilities"].get("ap_supported", True)]
-    if not wifi:
-        return None
-    if prefer_usb:
-        usb = [d for d in wifi
-               if d["kind"] == "wifi_usb" or d["capabilities"].get("usb")]
-        if usb:
-            return usb[0]
-    return wifi[0]
-
-
 def _create_bootstrap_ap():
     cfg = _load_yaml(config.DEFAULT_CONFIG).get("bootstrap_ap")
     if not cfg:
         return
-    target = _pick_ap_iface(prefer_usb=cfg.get("prefer_usb", True))
+    # Pick the first present, AP-capable wireless interface.
+    target = None
+    for d in hal.list_interfaces():
+        if d["present"] and d["kind"].startswith("wifi") and \
+           (d["capabilities"].get("ap_supported", True)):
+            target = d
+            break
     if not target:
         print("boot: no AP-capable wireless interface found; skipping bootstrap AP")
         return
     ap = dict(cfg)
-    ap.pop("prefer_usb", None)
     ap["iface_uuid"] = target["uuid"]
     ap["enabled"] = 1
     config_manager._persist_aps([ap])
-    print(f"boot: created bootstrap AP '{ap['ssid']}' on "
-          f"{target['last_name']} ({target['kind']})")
+    print(f"boot: created bootstrap AP '{ap['ssid']}' on {target['last_name']}")
 
 
 def main():
@@ -84,10 +68,8 @@ def main():
 
     aps = config_manager.current_aps()
     if aps:
-        # Apply without the confirmation watchdog AND without health-triggered
-        # rollback (no session to protect; converge to committed config).
-        res = config_manager.apply_aps(aps, actor="boot", require_confirm=False,
-                                       rollback_on_health=False)
+        # Apply without the confirmation watchdog (no session to protect).
+        res = config_manager.apply_aps(aps, actor="boot", require_confirm=False)
         print(f"boot: router mode {'up' if res.get('ok') else 'FAILED'}: {res}")
     else:
         print("boot: no access points configured yet")

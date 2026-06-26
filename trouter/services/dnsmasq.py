@@ -37,14 +37,11 @@ def generate(aps):
 
 
 def reload():
-    # Our own unit runs dnsmasq with -C pointing at the generated config above.
-    # The stock 'dnsmasq' service reads /etc/dnsmasq.conf and is disabled at
-    # install time, so we must not restart that one.
-    run(["systemctl", "restart", "travelrouter-dnsmasq"])
+    run(["systemctl", "restart", "dnsmasq"])
 
 
 def health():
-    rc, _ = run(["systemctl", "is-active", "--quiet", "travelrouter-dnsmasq"])
+    rc, _ = run(["systemctl", "is-active", "--quiet", "dnsmasq"])
     if rc in (0, 127):
         return True, "dnsmasq ok"
     return False, "dnsmasq not active"

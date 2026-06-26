@@ -39,7 +39,7 @@ def generate(aps):
             "policy": ap.get("routing_policy", "direct"),
             "isolation": ap.get("client_isolation", 0),
         })
-    content = render("nftables.conf.j2", rules=rules, mgmt_port=config.MGMT_PORT)
+    content = render("nftables.conf.j2", rules=rules)
     write(config.NFTABLES_FILE, content)
 
 

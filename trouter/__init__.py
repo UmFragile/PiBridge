@@ -11,4 +11,4 @@ snapshots, applies, health-checks and auto-rolls-back on failure or on a
 missed user confirmation. See docs/SAFETY.md.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.0"

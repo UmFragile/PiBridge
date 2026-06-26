@@ -5,14 +5,9 @@ PartOf=travelrouter.service
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/travelrouter
-# Free the radio before each start: clear rfkill, set the regulatory domain,
-# evict any wpa_supplicant/dhcpcd holding this interface, and down the link.
-# Without this, hostapd exits immediately on a fresh Pi and the unit loops.
-ExecStartPre=/opt/travelrouter/venv/bin/python -m trouter.apctl prestart %i
 ExecStart=/usr/sbin/hostapd /etc/travelrouter/generated/hostapd/%i.conf
 Restart=on-failure
-RestartSec=3
+RestartSec=2
 
 [Install]
 WantedBy=multi-user.target

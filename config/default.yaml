@@ -5,13 +5,10 @@ appliance:
   default_admin: admin             # password is set during install
 
 # A starter AP is created on first boot so the box is reachable immediately.
-# prefer_usb=true binds it to a USB Wi-Fi dongle when one is present, leaving
-# the Pi's single onboard radio free for an upstream client uplink. It falls
-# back to the onboard radio only if no USB radio is attached.
+# It binds to the first AP-capable wireless interface discovered by the HAL.
 bootstrap_ap:
   name: TravelRouter
   ssid: TravelRouter
-  prefer_usb: true
   psk: changeme-on-first-login
   band: "2.4"
   channel: 6
