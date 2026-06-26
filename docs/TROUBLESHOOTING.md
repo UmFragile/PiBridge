@@ -1,5 +1,36 @@
 # Troubleshooting
 
+## First step: run the doctor
+
+```sh
+sudo /opt/travelrouter/venv/bin/python -m trouter.doctor
+```
+
+It prints what radios were detected, which advertise AP mode, what APs are
+persisted, and whether configs generate — turning "no AP" into a specific cause.
+
+## No `apN.conf` is generated / hostapd: "could not open configuration file"
+
+If the file is simply absent (not deleted by a rollback — see below), the AP was
+never persisted, which almost always means **no radio advertised AP mode**.
+
+A radio is only used for an AP if `iw phy <phy> info` lists `* AP` under
+"Supported interface modes". Many inexpensive USB dongles — particularly
+Realtek RTL8188EU / RTL8192xU / RTL8821xU on the in-kernel driver — do **not**
+support AP/master mode with stock `hostapd`, so they are (correctly) skipped.
+Check yours:
+
+```sh
+lsusb                                   # identify the chipset
+iw phy                                  # list phys
+iw phy phy1 info | sed -n '/interface modes/,/valid interface/p'
+```
+
+If `AP` is not in that list, that dongle cannot host an AP with stock hostapd.
+Options: use the onboard radio for the AP and an Ethernet uplink instead, or use
+a dongle with a chipset known to do AP mode (e.g. Atheros AR9271,
+MediaTek MT7601U / MT7612U, or RTL8812AU with the out-of-tree driver).
+
 ## `hostapd@apN.service` keeps restarting / the AP never appears
 
 hostapd exits the instant it cannot put the radio into AP (master) mode, and

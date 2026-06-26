@@ -16,11 +16,17 @@ table inet trouter {
         type filter hook input priority 0; policy drop;
         ct state established,related accept
         iif "lo" accept
-        # Management UI + DHCP + DNS reachable from AP subnets only.
-        ip saddr @ap_subnets tcp dport { 80, 443 } accept
+        # IPv6 neighbor discovery / ICMP so v6 LAN connectivity survives.
+        meta l4proto ipv6-icmp accept
+        icmp type echo-request accept
+        # Management UI on the real listen port, reachable from AP clients and
+        # from any private LAN (so you can reach it over the upstream network
+        # during setup). The UI itself is authenticated + CSRF-protected.
+        tcp dport {{ mgmt_port }} ip saddr { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 } accept
+        ip saddr @ap_subnets tcp dport {{ mgmt_port }} accept
+        # DHCP + DNS for AP clients.
         ip saddr @ap_subnets udp dport { 53, 67 } accept
         ip saddr @ap_subnets tcp dport 53 accept
-        icmp type echo-request accept
     }
 
     chain forward {
