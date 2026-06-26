@@ -1,4 +1,4 @@
-# travelrouter
+# PiBridge
 
 A travel-router appliance for the Raspberry Pi Zero 2 W (Raspberry Pi OS Lite,
 64-bit). It turns a fresh OS into a Wi-Fi router managed entirely from a web UI:
