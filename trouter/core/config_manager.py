@@ -57,11 +57,16 @@ def _health():
     return (len(failed) == 0, "; ".join(failed) if failed else "ok")
 
 
-def apply_aps(aps, actor="admin", require_confirm=True):
+def apply_aps(aps, actor="admin", require_confirm=True, rollback_on_health=True):
     """Validate, then transactionally apply. Returns a dict the API hands back.
 
     On success with require_confirm the transaction is *armed*: the caller must
     POST a commit before the deadline or everything reverts.
+
+    rollback_on_health=False is used at boot: there is no admin session to lock
+    out, so a transient health blip (e.g. hostapd still bringing up the BSS)
+    must NOT delete the freshly generated config. We log health and commit; the
+    hostapd units converge as the radio settles.
     """
     findings, blocking = validate(aps)
     if blocking:
@@ -78,7 +83,11 @@ def apply_aps(aps, actor="admin", require_confirm=True):
     ).begin()
     try:
         tx.apply(lambda: _generate_all(aps))
-        tx.health()
+        if rollback_on_health:
+            tx.health()
+        else:
+            ok, detail = _health()
+            db.audit(actor, "apply.health", {"ok": ok, "detail": detail})
     except transaction.TransactionError as e:
         return {"ok": False, "error": str(e), "rolledback": True,
                 "findings": findings}

@@ -45,7 +45,31 @@ sudo iw reg set US    # use your own country code
 The installer and the `apctl` pre-start step now do this automatically; run the
 commands by hand if you are on an older build.
 
-### 3. Wrong or empty interface in the generated config
+### 3. `could not open configuration file .../apN.conf`
+
+The config was generated, the unit started, then a transaction **rolled back**
+and deleted the conf — but left the systemd unit looping against the now-missing
+file. This was a bug in builds before 0.1.2 (boot health-checked hostapd too
+eagerly and reverted to an empty first-boot snapshot). Fixed by: polling health
+so hostapd gets time to bring up the BSS, stopping orphaned units on reload, and
+making boot converge instead of self-destruct.
+
+If your box is stuck in this state from an earlier build, reset and reinstall:
+
+```sh
+# Stop any orphaned AP units.
+sudo systemctl stop 'hostapd@*'
+sudo systemctl disable 'hostapd@*'
+# Clear generated config and the state DB so first-boot bootstrap re-runs with
+# the current interface-selection logic.
+sudo rm -f /etc/travelrouter/generated/hostapd/*.conf
+sudo rm -f /var/lib/travelrouter/trouter.sqlite3
+# Reinstall (re-copies units, unblocks the radio, re-sets the admin password).
+sudo ./install.sh
+sudo reboot
+```
+
+### 4. Wrong or empty interface in the generated config
 
 ```sh
 grep interface= /etc/travelrouter/generated/hostapd/ap1.conf
